@@ -48,7 +48,6 @@ public class EncargosController : ControllerBase
     public async Task<IActionResult> Delete(int id) =>
         Ok(await _service.DeleteAsync(id));
 
-    // Prendas
     [HttpPost("prendas")]
     public async Task<IActionResult> AddPrenda([FromBody] CreatePrendaDto dto) =>
         Ok(await _service.AddPrendaAsync(dto));
@@ -57,7 +56,6 @@ public class EncargosController : ControllerBase
     public async Task<IActionResult> DeletePrenda(int prendaId) =>
         Ok(await _service.DeletePrendaAsync(prendaId));
 
-    // Arreglos
     [HttpPost("arreglos")]
     public async Task<IActionResult> AddArreglo([FromBody] CreateArregloDto dto) =>
         Ok(await _service.AddArregloAsync(dto));
