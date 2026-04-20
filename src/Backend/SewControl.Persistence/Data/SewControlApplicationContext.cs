@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace SewControl.Persistence.Data;
 
-public class TallerContext : DbContext
+public class SewControlContext : DbContext
 {
-    public TallerContext(DbContextOptions<TallerContext> options) : base(options) { }
+    public SewControlContext(DbContextOptions<SewControlContext> options) : base(options) { }
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<Costurera> Costureras => Set<Costurera>();

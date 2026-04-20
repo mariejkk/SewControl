@@ -10,8 +10,8 @@ using SewControl.Persistence.Data;
 
 namespace SewControl.Persistence.Migrations
 {
-    [DbContext(typeof(TallerContext))]
-    partial class TallerContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SewControlContext))]
+    partial class SewControlContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
