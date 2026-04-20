@@ -11,7 +11,7 @@ using SewControl.Persistence.Data;
 
 namespace SewControl.Persistence.Migrations
 {
-    [DbContext(typeof(TallerContext))]
+    [DbContext(typeof(SewControlContext))]
     [Migration("20260420001138_InitialCreate")]
     partial class InitialCreate
     {
