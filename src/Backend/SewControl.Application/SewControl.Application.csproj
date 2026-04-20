@@ -7,14 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="MappingProfile\" />
-    <Folder Include="Services\" />
-    <Folder Include="Responses\" />
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SewControl.Domain\SewControl.Domain.csproj" />
-    <ProjectReference Include="..\SewControl.Infraestructure\SewControl.Infraestructure.csproj" />
+    <ProjectReference Include="..\SewControl.Infraestructure\SewControl.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
