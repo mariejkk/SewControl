@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using SewControl.Application.Dtos.Usuarios;
+using SewControl.Application.Exceptions;
 using SewControl.Application.Responses;
 using SewControl.Domain.Entities.Usuarios;
 using SewControl.Infrastructure.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SewControl.Application.Services;
 
@@ -22,7 +18,6 @@ public class UsuariosService
         _mapper = mapper;
     }
 
-
     public async Task<ApiResponse<List<ClienteDto>>> GetAllClientesAsync()
     {
         var clientes = await _uow.Clientes.GetAllWithEncargosAsync();
@@ -31,15 +26,16 @@ public class UsuariosService
 
     public async Task<ApiResponse<ClienteDto>> GetClienteByIdAsync(int id)
     {
-        var cliente = await _uow.Clientes.GetWithEncargosByIdAsync(id);
-        if (cliente == null || cliente.IsDeleted)
-            return ApiResponse<ClienteDto>.Fail("Cliente no encontrado.");
+        var cliente = await _uow.Clientes.GetWithEncargosByIdAsync(id)
+            ?? throw new NotFoundException("Cliente", id);
 
         return ApiResponse<ClienteDto>.Ok(_mapper.Map<ClienteDto>(cliente));
     }
 
     public async Task<ApiResponse<ClienteDto>> CreateClienteAsync(CreateClienteDto dto)
     {
+        ClienteValidator.Validate(dto);
+
         var cliente = _mapper.Map<Cliente>(dto);
         await _uow.Clientes.AddAsync(cliente);
         await _uow.SaveChangesAsync();
@@ -49,9 +45,10 @@ public class UsuariosService
 
     public async Task<ApiResponse<ClienteDto>> UpdateClienteAsync(int id, CreateClienteDto dto)
     {
-        var cliente = await _uow.Clientes.GetByIdAsync(id);
-        if (cliente == null || cliente.IsDeleted)
-            return ApiResponse<ClienteDto>.Fail("Cliente no encontrado.");
+        ClienteValidator.Validate(dto);
+
+        var cliente = await _uow.Clientes.GetByIdAsync(id)
+            ?? throw new NotFoundException("Cliente", id);
 
         cliente.Nombre = dto.Nombre;
         cliente.Apellido = dto.Apellido;
@@ -67,9 +64,8 @@ public class UsuariosService
 
     public async Task<ApiResponse<bool>> DeleteClienteAsync(int id)
     {
-        var cliente = await _uow.Clientes.GetByIdAsync(id);
-        if (cliente == null || cliente.IsDeleted)
-            return ApiResponse<bool>.Fail("Cliente no encontrado.");
+        var cliente = await _uow.Clientes.GetByIdAsync(id)
+            ?? throw new NotFoundException("Cliente", id);
 
         cliente.IsDeleted = true;
         _uow.Clientes.Update(cliente);
@@ -77,7 +73,6 @@ public class UsuariosService
 
         return ApiResponse<bool>.Ok(true, "Cliente eliminado.");
     }
-
     public async Task<ApiResponse<List<CostureraDto>>> GetAllCosturerasAsync()
     {
         var costureras = await _uow.Costureras.GetAllWithEncargosAsync();
@@ -86,15 +81,16 @@ public class UsuariosService
 
     public async Task<ApiResponse<CostureraDto>> GetCostureraByIdAsync(int id)
     {
-        var costurera = await _uow.Costureras.GetWithEncargosByIdAsync(id);
-        if (costurera == null || costurera.IsDeleted)
-            return ApiResponse<CostureraDto>.Fail("Costurera no encontrada.");
+        var costurera = await _uow.Costureras.GetWithEncargosByIdAsync(id)
+            ?? throw new NotFoundException("Costurera", id);
 
         return ApiResponse<CostureraDto>.Ok(_mapper.Map<CostureraDto>(costurera));
     }
 
     public async Task<ApiResponse<CostureraDto>> CreateCostureraAsync(CreateCostureraDto dto)
     {
+        CostureraValidator.Validate(dto);
+
         var costurera = _mapper.Map<Costurera>(dto);
         await _uow.Costureras.AddAsync(costurera);
         await _uow.SaveChangesAsync();
@@ -104,9 +100,8 @@ public class UsuariosService
 
     public async Task<ApiResponse<bool>> ToggleActivaAsync(int id)
     {
-        var costurera = await _uow.Costureras.GetByIdAsync(id);
-        if (costurera == null || costurera.IsDeleted)
-            return ApiResponse<bool>.Fail("Costurera no encontrada.");
+        var costurera = await _uow.Costureras.GetByIdAsync(id)
+            ?? throw new NotFoundException("Costurera", id);
 
         costurera.Activa = !costurera.Activa;
         _uow.Costureras.Update(costurera);
@@ -118,9 +113,8 @@ public class UsuariosService
 
     public async Task<ApiResponse<bool>> DeleteCostureraAsync(int id)
     {
-        var costurera = await _uow.Costureras.GetByIdAsync(id);
-        if (costurera == null || costurera.IsDeleted)
-            return ApiResponse<bool>.Fail("Costurera no encontrada.");
+        var costurera = await _uow.Costureras.GetByIdAsync(id)
+            ?? throw new NotFoundException("Costurera", id);
 
         costurera.IsDeleted = true;
         _uow.Costureras.Update(costurera);

@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
 using SewControl.Application.Dtos.Encargos;
+using SewControl.Application.Exceptions;
 using SewControl.Application.Responses;
+using SewControl.Application.Validators;
 using SewControl.Domain.Entities.Encargos;
 using SewControl.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace SewControl.Application.Services;
 
@@ -27,15 +22,13 @@ public class EncargoService
     public async Task<ApiResponse<List<EncargoDto>>> GetAllAsync()
     {
         var encargos = await _uow.Encargos.GetAllWithDetailsAsync();
-        var dtos = _mapper.Map<List<EncargoDto>>(encargos);
-        return ApiResponse<List<EncargoDto>>.Ok(dtos);
+        return ApiResponse<List<EncargoDto>>.Ok(_mapper.Map<List<EncargoDto>>(encargos));
     }
 
     public async Task<ApiResponse<EncargoDto>> GetByIdAsync(int id)
     {
-        var encargo = await _uow.Encargos.GetWithDetailsByIdAsync(id);
-        if (encargo == null || encargo.IsDeleted)
-            return ApiResponse<EncargoDto>.Fail("Encargo no encontrado.");
+        var encargo = await _uow.Encargos.GetWithDetailsByIdAsync(id)
+            ?? throw new NotFoundException("Encargo", id);
 
         return ApiResponse<EncargoDto>.Ok(_mapper.Map<EncargoDto>(encargo));
     }
@@ -60,6 +53,8 @@ public class EncargoService
 
     public async Task<ApiResponse<EncargoDto>> CreateAsync(CreateEncargoDto dto)
     {
+        EncargoValidator.Validate(dto);
+
         var encargo = _mapper.Map<Encargo>(dto);
         encargo.FechaRecepcion = DateTime.UtcNow;
         encargo.Estado = EstadoEncargo.Pendiente;
@@ -73,9 +68,10 @@ public class EncargoService
 
     public async Task<ApiResponse<EncargoDto>> UpdateEstadoAsync(int id, UpdateEncargoDto dto)
     {
-        var encargo = await _uow.Encargos.GetByIdAsync(id);
-        if (encargo == null || encargo.IsDeleted)
-            return ApiResponse<EncargoDto>.Fail("Encargo no encontrado.");
+        EncargoValidator.ValidateUpdate(dto);
+
+        var encargo = await _uow.Encargos.GetByIdAsync(id)
+            ?? throw new NotFoundException("Encargo", id);
 
         encargo.Estado = dto.Estado;
 
@@ -87,7 +83,6 @@ public class EncargoService
             encargo.PrecioTotal = dto.PrecioTotal.Value;
         if (dto.Observaciones != null)
             encargo.Observaciones = dto.Observaciones;
-
         if (dto.CostureraId.HasValue && dto.CostureraId > 0)
             encargo.CostureraId = dto.CostureraId.Value;
 
@@ -103,9 +98,8 @@ public class EncargoService
 
     public async Task<ApiResponse<bool>> DeleteAsync(int id)
     {
-        var encargo = await _uow.Encargos.GetByIdAsync(id);
-        if (encargo == null || encargo.IsDeleted)
-            return ApiResponse<bool>.Fail("Encargo no encontrado.");
+        var encargo = await _uow.Encargos.GetByIdAsync(id)
+            ?? throw new NotFoundException("Encargo", id);
 
         encargo.IsDeleted = true;
         _uow.Encargos.Update(encargo);
@@ -116,9 +110,8 @@ public class EncargoService
 
     public async Task<ApiResponse<PrendaDto>> AddPrendaAsync(CreatePrendaDto dto)
     {
-        var encargo = await _uow.Encargos.GetByIdAsync(dto.EncargoId);
-        if (encargo == null || encargo.IsDeleted)
-            return ApiResponse<PrendaDto>.Fail("Encargo no encontrado.");
+        var encargo = await _uow.Encargos.GetByIdAsync(dto.EncargoId)
+            ?? throw new NotFoundException("Encargo", dto.EncargoId);
 
         var prenda = _mapper.Map<Prenda>(dto);
         await _uow.Prendas.AddAsync(prenda);
@@ -129,9 +122,8 @@ public class EncargoService
 
     public async Task<ApiResponse<bool>> DeletePrendaAsync(int prendaId)
     {
-        var prenda = await _uow.Prendas.GetByIdAsync(prendaId);
-        if (prenda == null || prenda.IsDeleted)
-            return ApiResponse<bool>.Fail("Prenda no encontrada.");
+        var prenda = await _uow.Prendas.GetByIdAsync(prendaId)
+            ?? throw new NotFoundException("Prenda", prendaId);
 
         prenda.IsDeleted = true;
         _uow.Prendas.Update(prenda);
@@ -139,11 +131,11 @@ public class EncargoService
 
         return ApiResponse<bool>.Ok(true, "Prenda eliminada.");
     }
+
     public async Task<ApiResponse<ArregloDto>> AddArregloAsync(CreateArregloDto dto)
     {
-        var encargo = await _uow.Encargos.GetByIdAsync(dto.EncargoId);
-        if (encargo == null || encargo.IsDeleted)
-            return ApiResponse<ArregloDto>.Fail("Encargo no encontrado.");
+        var encargo = await _uow.Encargos.GetByIdAsync(dto.EncargoId)
+            ?? throw new NotFoundException("Encargo", dto.EncargoId);
 
         var arreglo = _mapper.Map<Arreglo>(dto);
         await _uow.Arreglos.AddAsync(arreglo);
@@ -154,9 +146,8 @@ public class EncargoService
 
     public async Task<ApiResponse<bool>> DeleteArregloAsync(int arregloId)
     {
-        var arreglo = await _uow.Arreglos.GetByIdAsync(arregloId);
-        if (arreglo == null || arreglo.IsDeleted)
-            return ApiResponse<bool>.Fail("Arreglo no encontrado.");
+        var arreglo = await _uow.Arreglos.GetByIdAsync(arregloId)
+            ?? throw new NotFoundException("Arreglo", arregloId);
 
         arreglo.IsDeleted = true;
         _uow.Arreglos.Update(arreglo);
