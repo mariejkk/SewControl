@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SewControl.API.Middlewares;
 using SewControl.Application.MappingProfile;
 using SewControl.Application.Services;
 using SewControl.Infrastructure.Repositories;
@@ -6,10 +7,10 @@ using SewControl.Persistence.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TallerContext>(options =>
+builder.Services.AddDbContext<SewControlContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<TallerContext>());
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<SewControlContext>());
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<EncargoService>();
 builder.Services.AddScoped<UsuariosService>();
@@ -31,7 +32,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.UseExceptionMiddleware();
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
