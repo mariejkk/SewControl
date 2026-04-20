@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SewControl.Domain.Entities.Encargos;
+using SewControl.Domain.Entities.Usuarios;
 using System;
 using System.Collections.Generic;
 using System.Linq;

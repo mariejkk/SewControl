@@ -78,15 +78,17 @@ public class EncargoService
             return ApiResponse<EncargoDto>.Fail("Encargo no encontrado.");
 
         encargo.Estado = dto.Estado;
+
         if (dto.FechaEntregaEstimada.HasValue)
             encargo.FechaEntregaEstimada = dto.FechaEntregaEstimada.Value;
         if (dto.FechaEntregaReal.HasValue)
             encargo.FechaEntregaReal = dto.FechaEntregaReal.Value;
-        if (dto.PrecioTotal.HasValue)
+        if (dto.PrecioTotal.HasValue && dto.PrecioTotal > 0)
             encargo.PrecioTotal = dto.PrecioTotal.Value;
         if (dto.Observaciones != null)
             encargo.Observaciones = dto.Observaciones;
-        if (dto.CostureraId.HasValue)
+
+        if (dto.CostureraId.HasValue && dto.CostureraId > 0)
             encargo.CostureraId = dto.CostureraId.Value;
 
         if (dto.Estado == EstadoEncargo.Entregado && encargo.FechaEntregaReal == null)
