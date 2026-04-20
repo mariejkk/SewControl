@@ -47,5 +47,5 @@ public class UpdateEncargoDto
     public DateTime? FechaEntregaReal { get; set; }
     public decimal? PrecioTotal { get; set; }
     public string? Observaciones { get; set; }
-    public int? CostureraId { get; set; }
+    public int? CostureraId { get; set; }  
 }
