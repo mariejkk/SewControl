@@ -20,6 +20,9 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<SewControlMappingProfile>();
 });
 
+builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
+    p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,7 +34,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 app.UseExceptionMiddleware();
 app.UseHttpsRedirection();

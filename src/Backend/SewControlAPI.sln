@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SewControl.Application", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SewControl.Persistence", "SewControl.Persistence\SewControl.Persistence.csproj", "{89C59225-510F-4829-AF80-ADD8ADE3F13E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SewControl.Web", "..\Fronted\SewControl.Web\SewControl.Web.csproj", "{778B6F69-2BF1-1881-8EE4-E3715F6999D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{89C59225-510F-4829-AF80-ADD8ADE3F13E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89C59225-510F-4829-AF80-ADD8ADE3F13E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89C59225-510F-4829-AF80-ADD8ADE3F13E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{778B6F69-2BF1-1881-8EE4-E3715F6999D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{778B6F69-2BF1-1881-8EE4-E3715F6999D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{778B6F69-2BF1-1881-8EE4-E3715F6999D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{778B6F69-2BF1-1881-8EE4-E3715F6999D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

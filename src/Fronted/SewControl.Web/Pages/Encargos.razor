@@ -1,0 +1,203 @@
+@page "/encargos"
+@inject EncargoService EncargoSvc
+@inject ClienteService ClienteSvc
+@inject CostureraService CostureraeSvc
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Encargos - SewControl</PageTitle>
+
+<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Encargos</MudText>
+    <MudButton Variant="Variant.Filled" Style="background-color:#8F2B78;color:white;"
+               StartIcon="@Icons.Material.Filled.Add" OnClick="Abrir">
+        Nuevo Encargo
+    </MudButton>
+</MudStack>
+
+<MudPaper Class="pa-3 mb-4" Elevation="1">
+    <MudGrid>
+        <MudItem xs="12" sm="5">
+            <MudTextField @bind-Value="_busqueda" Placeholder="Buscar por cliente o costurera..."
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate />
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudSelect @bind-Value="_filtroEstado" Label="Estado" Clearable>
+                @foreach (EstadoEncargo e in Enum.GetValues<EstadoEncargo>())
+                {
+                    <MudSelectItem Value="@((EstadoEncargo?)e)">@e</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (_cargando)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else
+{
+    <MudPaper Elevation="2">
+        <MudTable Items="@Filtrados" Hover>
+            <HeaderContent>
+                <MudTh>#</MudTh>
+                <MudTh>Cliente</MudTh>
+                <MudTh>Costurera</MudTh>
+                <MudTh>Tipo</MudTh>
+                <MudTh>Estado</MudTh>
+                <MudTh>Entrega</MudTh>
+                <MudTh>Total</MudTh>
+                <MudTh>Saldo</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Id</MudTd>
+                <MudTd>@context.NombreCliente</MudTd>
+                <MudTd>@context.NombreCosturera</MudTd>
+                <MudTd>@context.Tipo</MudTd>
+                <MudTd>
+                    <MudChip T="string" Color="@GetColor(context.Estado)" Size="Size.Small">@context.Estado</MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudText Color="@(context.EstaAtrasado? Color.Error: Color.Default)">
+                        @context.FechaEntregaEstimada.ToString("dd/MM/yyyy")
+                        @if (context.EstaAtrasado)
+                        {
+                            <span> ⚠️</span>
+                        }
+                    </MudText>
+                </MudTd>
+                <MudTd>RD$@context.PrecioTotal.ToString("N2")</MudTd>
+                <MudTd>
+                    <MudText Color="@(context.Saldo > 0 ? Color.Error : Color.Success)">
+                        RD$@context.Saldo.ToString("N2")
+                    </MudText>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                                   OnClick="@(() => Nav.NavigateTo($"/encargos/{context.Id}"))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                   Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent><MudText Class="pa-4">No hay encargos.</MudText></NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+}
+
+@if (_showForm)
+{
+    <MudOverlay Visible="_showForm" DarkBackground ZIndex="1000" />
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:600px;max-width:90vw;max-height:90vh;overflow-y:auto;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudText Typo="Typo.h6" Class="mb-4">Nuevo Encargo</MudText>
+            @if (_errores.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">
+                    @foreach (var e in _errores)
+                    {
+                        <div>• @e</div>
+                    }
+                </MudAlert>
+            }
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_form.ClienteId" Label="Cliente" Required>
+                        @foreach (var c in _clientes)
+                        {
+                            <MudSelectItem Value="@c.Id">@c.NombreCompleto</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_form.CostureraId" Label="Costurera" Required>
+                        @foreach (var c in _costureras.Where(x => x.Activa))
+                        {
+                            <MudSelectItem Value="@c.Id">@c.NombreCompleto</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_form.Tipo" Label="Tipo de encargo">
+                        @foreach (TipoEncargo t in Enum.GetValues<TipoEncargo>())
+                        {
+                            <MudSelectItem Value="@t">@t</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudDatePicker @bind-Date="_fechaEntrega" Label="Fecha de entrega" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_form.PrecioTotal" Label="Precio total"
+                                     Adornment="Adornment.Start" AdornmentText="RD$" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_form.Anticipo" Label="Anticipo"
+                                     Adornment="Adornment.Start" AdornmentText="RD$" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_form.Observaciones" Label="Observaciones" Lines="2" />
+                </MudItem>
+            </MudGrid>
+            <MudStack Row Justify="Justify.FlexEnd" Class="mt-4" Spacing="2">
+                <MudButton OnClick="@(() => _showForm = false)">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Guardar">Guardar</MudButton>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
+
+@code {
+    private List<EncargoDto> _encargos = new();
+    private List<ClienteDto> _clientes = new();
+    private List<CostureraDto> _costureras = new();
+    private bool _cargando = true, _showForm = false;
+    private string _busqueda = "";
+    private EstadoEncargo? _filtroEstado;
+    private CreateEncargoDto _form = new();
+    private DateTime? _fechaEntrega = DateTime.Today.AddDays(7);
+    private List<string> _errores = new();
+
+    private IEnumerable<EncargoDto> Filtrados => _encargos
+        .Where(e =>
+            (string.IsNullOrEmpty(_busqueda) ||
+             e.NombreCliente.Contains(_busqueda, StringComparison.OrdinalIgnoreCase) ||
+             e.NombreCosturera.Contains(_busqueda, StringComparison.OrdinalIgnoreCase)) &&
+            (_filtroEstado == null || e.Estado == _filtroEstado));
+
+    protected override async Task OnInitializedAsync()
+    {
+        _encargos = await EncargoSvc.GetAllAsync();
+        _clientes = await ClienteSvc.GetAllAsync();
+        _costureras = await CostureraeSvc.GetAllAsync();
+        _cargando = false;
+    }
+
+    private void Abrir() { _form = new(); _fechaEntrega = DateTime.Today.AddDays(7); _errores = new(); _showForm = true; }
+
+    private async Task Guardar()
+    {
+        _form.FechaEntregaEstimada = _fechaEntrega ?? DateTime.Today.AddDays(7);
+        var (ok, msg, errors) = await EncargoSvc.CreateAsync(_form);
+        if (ok) { Snackbar.Add(msg ?? "Encargo creado.", Severity.Success); _showForm = false; _encargos = await EncargoSvc.GetAllAsync(); }
+        else _errores = errors ?? new List<string> { msg ?? "Error al crear encargo." };
+    }
+
+    private async Task Eliminar(EncargoDto e)
+    {
+        if (await EncargoSvc.DeleteAsync(e.Id))
+        { Snackbar.Add("Encargo eliminado.", Severity.Success); _encargos = await EncargoSvc.GetAllAsync(); }
+    }
+
+    private Color GetColor(EstadoEncargo e) => e switch
+    {
+        EstadoEncargo.Pendiente => Color.Warning,
+        EstadoEncargo.EnProceso => Color.Info,
+        EstadoEncargo.Listo => Color.Success,
+        EstadoEncargo.Entregado => Color.Default,
+        EstadoEncargo.Cancelado => Color.Error,
+        _ => Color.Default
+    };
+}

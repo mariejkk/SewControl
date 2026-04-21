@@ -1,0 +1,132 @@
+@page "/costureras"
+@inject CostureraService CostureraeSvc
+@inject ISnackbar Snackbar
+
+<PageTitle>Costureras - SewControl</PageTitle>
+
+<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Costureras</MudText>
+    <MudButton Variant="Variant.Filled" Style="background-color:#8F2B78;color:white;"
+               StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="Abrir">
+        Nueva Costurera
+    </MudButton>
+</MudStack>
+
+@if (_cargando)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else
+{
+    <MudGrid>
+        @foreach (var c in _costureras)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="@(c.Activa? Color.Primary: Color.Default)" Size="Size.Large">
+                                @c.Nombre[0]
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.subtitle1"><b>@c.NombreCompleto</b></MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@(c.Especialidad ?? "Sin especialidad")</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudChip T="string" Size="Size.Small" Color="@(c.Activa? Color.Success: Color.Default)">
+                                @(c.Activa ? "Activa" : "Inactiva")
+                            </MudChip>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">📞 @c.Telefono</MudText>
+                        <MudText Typo="Typo.body2">📋 @c.EncargosActivos encargo(s) activo(s)</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Size="Size.Small" Variant="Variant.Outlined"
+                                   Color="@(c.Activa ? Color.Warning : Color.Success)"
+                                   OnClick="@(() => Toggle(c))">
+                            @(c.Activa ? "Desactivar" : "Activar")
+                        </MudButton>
+                        <MudSpacer />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                       Size="Size.Small" OnClick="@(() => Eliminar(c))" />
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+        @if (_costureras.Count == 0)
+        {
+            <MudItem xs="12">
+                <MudText Color="Color.Secondary" Class="pa-4">No hay costureras registradas.</MudText>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@if (_showForm)
+{
+    <MudOverlay Visible="_showForm" DarkBackground ZIndex="1000" />
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:520px;max-width:90vw;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudText Typo="Typo.h6" Class="mb-4">Nueva Costurera</MudText>
+            @if (_errores.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">
+                    @foreach (var e in _errores)
+                    {
+                        <div>• @e</div>
+                    }
+                </MudAlert>
+            }
+            <MudGrid>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Nombre" Label="Nombre" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Apellido" Label="Apellido" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Telefono" Label="Teléfono" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Especialidad" Label="Especialidad" /></MudItem>
+            </MudGrid>
+            <MudStack Row Justify="Justify.FlexEnd" Class="mt-4" Spacing="2">
+                <MudButton OnClick="@(() => _showForm = false)">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Guardar">Guardar</MudButton>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
+
+@code {
+    private List<CostureraDto> _costureras = new();
+    private bool _cargando = true, _showForm = false;
+    private CreateCostureraDto _form = new();
+    private List<string> _errores = new();
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _costureras = await CostureraeSvc.GetAllAsync();
+        _cargando = false;
+    }
+
+    private void Abrir() { _form = new(); _errores = new(); _showForm = true; }
+
+    private async Task Guardar()
+    {
+        var (ok, msg, errors) = await CostureraeSvc.CreateAsync(_form);
+        if (ok) { Snackbar.Add(msg ?? "Costurera registrada.", Severity.Success); _showForm = false; await Cargar(); }
+        else _errores = errors ?? new List<string> { msg ?? "Error." };
+    }
+
+    private async Task Toggle(CostureraDto c)
+    {
+        await CostureraeSvc.ToggleActivaAsync(c.Id);
+        await Cargar();
+    }
+
+    private async Task Eliminar(CostureraDto c)
+    {
+        if (await CostureraeSvc.DeleteAsync(c.Id))
+        { Snackbar.Add("Costurera eliminada.", Severity.Success); await Cargar(); }
+    }
+}

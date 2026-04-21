@@ -1,0 +1,133 @@
+@page "/clientes"
+@inject ClienteService ClienteSvc
+@inject ISnackbar Snackbar
+
+<PageTitle>Clientes - SewControl</PageTitle>
+
+<MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.h5">Clientes</MudText>
+    <MudButton Variant="Variant.Filled" Style="background-color:#8F2B78;color:white;"
+               StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="Abrir">
+        Nuevo Cliente
+    </MudButton>
+</MudStack>
+
+@if (_cargando)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else
+{
+    <MudPaper Elevation="2">
+        <MudTable Items="@_clientes" Hover Filter="new Func<ClienteDto, bool>(Filtrar)">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_busqueda" Placeholder="Buscar..."
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Immediate />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Nombre</MudTh>
+                <MudTh>Teléfono</MudTh>
+                <MudTh>Email</MudTh>
+                <MudTh>Dirección</MudTh>
+                <MudTh>Encargos</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.NombreCompleto</MudTd>
+                <MudTd>@context.Telefono</MudTd>
+                <MudTd>@(context.Email ?? "-")</MudTd>
+                <MudTd>@(context.Direccion ?? "-")</MudTd>
+                <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Primary">@context.TotalEncargos</MudChip></MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Editar(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent><MudText>No hay clientes registrados.</MudText></NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+}
+
+@if (_showForm)
+{
+    <MudOverlay Visible="_showForm" DarkBackground ZIndex="1000" />
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:520px;max-width:90vw;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudText Typo="Typo.h6" Class="mb-4">@(_editando ? "Editar Cliente" : "Nuevo Cliente")</MudText>
+            @if (_errores.Count > 0)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">
+                    @foreach (var e in _errores)
+                    {
+                        <div>• @e</div>
+                    }
+                </MudAlert>
+            }
+            <MudGrid>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Nombre" Label="Nombre" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Apellido" Label="Apellido" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Telefono" Label="Teléfono" Required /></MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_form.Email" Label="Email" /></MudItem>
+                <MudItem xs="12"><MudTextField @bind-Value="_form.Direccion" Label="Dirección" /></MudItem>
+            </MudGrid>
+            <MudStack Row Justify="Justify.FlexEnd" Class="mt-4" Spacing="2">
+                <MudButton OnClick="@(() => _showForm = false)">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Guardar">Guardar</MudButton>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
+
+@code {
+    private List<ClienteDto> _clientes = new();
+    private bool _cargando = true, _showForm = false, _editando = false;
+    private string _busqueda = "";
+    private CreateClienteDto _form = new();
+    private List<string> _errores = new();
+    private int _editandoId;
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _clientes = await ClienteSvc.GetAllAsync();
+        _cargando = false;
+    }
+
+    private bool Filtrar(ClienteDto c) =>
+        string.IsNullOrEmpty(_busqueda) ||
+        c.NombreCompleto.Contains(_busqueda, StringComparison.OrdinalIgnoreCase) ||
+        c.Telefono.Contains(_busqueda);
+
+    private void Abrir() { _form = new(); _errores = new(); _editando = false; _showForm = true; }
+
+    private void Editar(ClienteDto c)
+    {
+        _editandoId = c.Id;
+        _form = new() { Nombre = c.Nombre, Apellido = c.Apellido, Telefono = c.Telefono, Email = c.Email, Direccion = c.Direccion };
+        _errores = new(); _editando = true; _showForm = true;
+    }
+
+    private async Task Guardar()
+    {
+        _errores = new();
+        if (_editando)
+        {
+            var (ok, msg) = await ClienteSvc.UpdateAsync(_editandoId, _form);
+            if (ok) { Snackbar.Add(msg ?? "Actualizado.", Severity.Success); _showForm = false; await Cargar(); }
+        }
+        else
+        {
+            var (ok, msg, errors) = await ClienteSvc.CreateAsync(_form);
+            if (ok) { Snackbar.Add(msg ?? "Creado.", Severity.Success); _showForm = false; await Cargar(); }
+            else _errores = errors ?? new List<string> { msg ?? "Error." };
+        }
+    }
+
+    private async Task Eliminar(ClienteDto c)
+    {
+        if (await ClienteSvc.DeleteAsync(c.Id))
+        { Snackbar.Add("Cliente eliminado.", Severity.Success); await Cargar(); }
+    }
+}
