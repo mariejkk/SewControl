@@ -1,0 +1,46 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="2" Style="background-color:#8F2B78;">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
+                       OnClick="@(() => _drawerOpen = !_drawerOpen)" />
+
+        <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="ml-2">
+            <MudText Typo="Typo.h6" Class="ml-2">SewControl</MudText>
+        </MudStack>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always"
+               Style="background-color:#FFFFFF ;">
+        <MudNavMenu>
+            <MudText Typo="Typo.overline" Class="px-4 pt-4 pb-1" Color="Color.Secondary">MENÚ</MudText>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
+                Dashboard
+            </MudNavLink>
+            <MudNavLink Href="/encargos" Icon="@Icons.Material.Filled.Assignment">
+                Encargos
+            </MudNavLink>
+            <MudNavLink Href="/clientes" Icon="@Icons.Material.Filled.People">
+                Clientes
+            </MudNavLink>
+            <MudNavLink Href="/costureras" Icon="@Icons.Material.Filled.ContentCut">
+                Costureras
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+}

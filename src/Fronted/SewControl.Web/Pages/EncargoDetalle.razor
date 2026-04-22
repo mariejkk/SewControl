@@ -1,0 +1,261 @@
+@page "/encargos/{Id:int}"
+@inject EncargoService EncargoSvc
+@inject ISnackbar Snackbar
+@inject NavigationManager Nav
+
+<PageTitle>Encargo #@Id - SewControl</PageTitle>
+
+@if (_cargando)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else if (_encargo is null)
+{
+    <MudAlert Severity="Severity.Error">Encargo no encontrado.</MudAlert>
+}
+else
+{
+    <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="@(() => Nav.NavigateTo("/encargos"))" />
+        <MudText Typo="Typo.h5">Encargo #@_encargo.Id</MudText>
+        <MudChip T="string" Color="@GetColor(_encargo.Estado)">@_encargo.Estado</MudChip>
+        @if (_encargo.EstaAtrasado)
+        {
+            <MudChip T="string" Color="Color.Error">⚠️ Atrasado</MudChip>
+        }
+    </MudStack>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Información General</MudText>
+                <MudGrid Spacing="1">
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Cliente</MudText><MudText><b>@_encargo.NombreCliente</b></MudText></MudItem>
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Costurera</MudText><MudText><b>@_encargo.NombreCosturera</b></MudText></MudItem>
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Tipo</MudText><MudText>@_encargo.Tipo</MudText></MudItem>
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Recibido</MudText><MudText>@_encargo.FechaRecepcion.ToString("dd/MM/yyyy")</MudText></MudItem>
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Entrega estimada</MudText><MudText Color="@(_encargo.EstaAtrasado? Color.Error: Color.Default)">@_encargo.FechaEntregaEstimada.ToString("dd/MM/yyyy")</MudText></MudItem>
+                    <MudItem xs="6"><MudText Typo="Typo.caption">Entrega real</MudText><MudText>@(_encargo.FechaEntregaReal?.ToString("dd/MM/yyyy") ?? "-")</MudText></MudItem>
+                    <MudItem xs="12"><MudText Typo="Typo.caption">Observaciones</MudText><MudText>@(_encargo.Observaciones ?? "-")</MudText></MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-3">Financiero</MudText>
+                <MudText>Total: <b>RD$@_encargo.PrecioTotal.ToString("N2")</b></MudText>
+                <MudText>Anticipo: <b>RD$@((_encargo.Anticipo ?? 0).ToString("N2"))</b></MudText>
+                <MudText Color="@(_encargo.Saldo > 0 ? Color.Error : Color.Success)">
+                    Saldo: <b>RD$@_encargo.Saldo.ToString("N2")</b>
+                </MudText>
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.h6" Class="mb-2">Cambiar Estado</MudText>
+                <MudSelect @bind-Value="_nuevoEstado" Label="Estado">
+                    @foreach (EstadoEncargo e in Enum.GetValues<EstadoEncargo>())
+                    {
+                        <MudSelectItem Value="@e">@e</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField @bind-Value="_obsUpdate" Label="Observaciones" Class="mt-2" />
+                <MudButton Variant="Variant.Filled" Style="background-color:#8F2B78;color:white;" FullWidth
+                           OnClick="ActualizarEstado">
+                    Actualizar Estado
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudText Typo="Typo.h6">Prendas (@_encargo.Prendas.Count)</MudText>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="@(() => _showFormPrenda = true)">Agregar</MudButton>
+                </MudStack>
+                @if (_encargo.Prendas.Count == 0)
+                {
+                    <MudText Color="Color.Secondary">Sin prendas registradas.</MudText>
+                }
+                else
+                {
+                    @foreach (var p in _encargo.Prendas)
+                    {
+                        <MudPaper Class="pa-2 mb-2" Outlined>
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <div>
+                                    <MudText><b>@p.Tipo</b> — @p.Descripcion</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@(p.Color) @(p.Talla) @(p.Tela)</MudText>
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                               Color="Color.Error" OnClick="@(() => EliminarPrenda(p.Id))" />
+                            </MudStack>
+                        </MudPaper>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudText Typo="Typo.h6">Arreglos (@_encargo.Arreglos.Count)</MudText>
+                    <MudButton Size="Size.Small" Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="@(() => _showFormArreglo = true)">Agregar</MudButton>
+                </MudStack>
+                @if (_encargo.Arreglos.Count == 0)
+                {
+                    <MudText Color="Color.Secondary">Sin arreglos registrados.</MudText>
+                }
+                else
+                {
+                    @foreach (var a in _encargo.Arreglos)
+                    {
+                        <MudPaper Class="pa-2 mb-2" Outlined>
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <div>
+                                    <MudText><b>@a.Tipo</b> — @a.Descripcion</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">RD$@a.Costo.ToString("N2")</MudText>
+                                </div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                               Color="Color.Error" OnClick="@(() => EliminarArreglo(a.Id))" />
+                            </MudStack>
+                        </MudPaper>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+@if (_showFormPrenda)
+{
+    <MudOverlay Visible="_showFormPrenda" DarkBackground ZIndex="1000" />
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:520px;max-width:90vw;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudText Typo="Typo.h6" Class="mb-4">Agregar Prenda</MudText>
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_formPrenda.Tipo" Label="Tipo">
+                        @foreach (TipoPrenda t in Enum.GetValues<TipoPrenda>())
+                        {
+                            <MudSelectItem Value="@t">@t</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_formPrenda.Descripcion" Label="Descripción" Required /></MudItem>
+                <MudItem xs="4"><MudTextField @bind-Value="_formPrenda.Tela" Label="Tela" /></MudItem>
+                <MudItem xs="4"><MudTextField @bind-Value="_formPrenda.Color" Label="Color" /></MudItem>
+                <MudItem xs="4"><MudTextField @bind-Value="_formPrenda.Talla" Label="Talla" /></MudItem>
+                <MudItem xs="12"><MudTextField @bind-Value="_formPrenda.Observaciones" Label="Observaciones" /></MudItem>
+            </MudGrid>
+            <MudStack Row Justify="Justify.FlexEnd" Class="mt-4" Spacing="2">
+                <MudButton OnClick="@(() => _showFormPrenda = false)">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarPrenda">Guardar</MudButton>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
+
+@if (_showFormArreglo)
+{
+    <MudOverlay Visible="_showFormArreglo" DarkBackground ZIndex="1000" />
+    <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:520px;max-width:90vw;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudText Typo="Typo.h6" Class="mb-4">Agregar Arreglo</MudText>
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudSelect @bind-Value="_formArreglo.Tipo" Label="Tipo">
+                        @foreach (TipoArreglo t in Enum.GetValues<TipoArreglo>())
+                        {
+                            <MudSelectItem Value="@t">@t</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6"><MudTextField @bind-Value="_formArreglo.Descripcion" Label="Descripción" Required /></MudItem>
+                <MudItem xs="6">
+                    <MudNumericField @bind-Value="_formArreglo.Costo" Label="Costo"
+                                     Adornment="Adornment.Start" AdornmentText="RD$" />
+                </MudItem>
+                <MudItem xs="12"><MudTextField @bind-Value="_formArreglo.Observaciones" Label="Observaciones" /></MudItem>
+            </MudGrid>
+            <MudStack Row Justify="Justify.FlexEnd" Class="mt-4" Spacing="2">
+                <MudButton OnClick="@(() => _showFormArreglo = false)">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GuardarArreglo">Guardar</MudButton>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private EncargoDto? _encargo;
+    private bool _cargando = true;
+    private EstadoEncargo _nuevoEstado;
+    private string? _obsUpdate;
+    private bool _showFormPrenda, _showFormArreglo;
+    private CreatePrendaDto _formPrenda = new();
+    private CreateArregloDto _formArreglo = new();
+
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        _cargando = true;
+        _encargo = await EncargoSvc.GetByIdAsync(Id);
+        if (_encargo != null) _nuevoEstado = _encargo.Estado;
+        _cargando = false;
+    }
+
+    private async Task ActualizarEstado()
+    {
+        var (ok, msg) = await EncargoSvc.UpdateAsync(Id, new UpdateEncargoDto
+        {
+            Estado = _nuevoEstado,
+            Observaciones = _obsUpdate
+        });
+        if (ok) { Snackbar.Add(msg ?? "Estado actualizado.", Severity.Success); await Cargar(); }
+        else Snackbar.Add(msg ?? "Error al actualizar.", Severity.Error);
+    }
+
+    private async Task GuardarPrenda()
+    {
+        _formPrenda.EncargoId = Id;
+        var (ok, msg, _) = await EncargoSvc.AddPrendaAsync(_formPrenda);
+        if (ok) { Snackbar.Add(msg ?? "Prenda agregada.", Severity.Success); _showFormPrenda = false; _formPrenda = new(); await Cargar(); }
+        else Snackbar.Add(msg ?? "Error.", Severity.Error);
+    }
+
+    private async Task EliminarPrenda(int pid)
+    {
+        if (await EncargoSvc.DeletePrendaAsync(pid))
+        { Snackbar.Add("Prenda eliminada.", Severity.Success); await Cargar(); }
+    }
+
+    private async Task GuardarArreglo()
+    {
+        _formArreglo.EncargoId = Id;
+        var (ok, msg, _) = await EncargoSvc.AddArregloAsync(_formArreglo);
+        if (ok) { Snackbar.Add(msg ?? "Arreglo agregado.", Severity.Success); _showFormArreglo = false; _formArreglo = new(); await Cargar(); }
+        else Snackbar.Add(msg ?? "Error.", Severity.Error);
+    }
+
+    private async Task EliminarArreglo(int aid)
+    {
+        if (await EncargoSvc.DeleteArregloAsync(aid))
+        { Snackbar.Add("Arreglo eliminado.", Severity.Success); await Cargar(); }
+    }
+
+    private Color GetColor(EstadoEncargo e) => e switch
+    {
+        EstadoEncargo.Pendiente => Color.Warning,
+        EstadoEncargo.EnProceso => Color.Info,
+        EstadoEncargo.Listo => Color.Success,
+        EstadoEncargo.Entregado => Color.Default,
+        EstadoEncargo.Cancelado => Color.Error,
+        _ => Color.Default
+    };
+}
