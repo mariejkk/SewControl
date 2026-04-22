@@ -1,117 +1,167 @@
 @page "/"
 @inject EncargoService EncargoSvc
 @inject ClienteService ClienteSvc
-@inject CostureraService CostureraeSvc
+@inject NavigationManager Nav
 
-<PageTitle>Dashboard - SewControl</PageTitle>
-<MudText Typo="Typo.h5" Class="mb-5">Dashboard</MudText>
+<PageTitle>Inicio - SewControl</PageTitle>
 
-@if (_cargando)
+<MudStack AlignItems="AlignItems.Center" Class="mb-6 mt-4">
+    <MudText Typo="Typo.h3" Align="Align.Center" Style="color:#C2185B;font-weight:bold;">
+         Bienvenido a SewControl
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Color="Color.Secondary">
+        Sistema de Control de Taller de Costura
+    </MudText>
+</MudStack>
+
+<MudGrid Justify="Justify.Center" Class="mb-6">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_totalEncargos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Encargos</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.HourglassTop" Color="Color.Warning" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_pendientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Pendientes</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_listos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Listos</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_totalClientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Clientes</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@if (_atrasados > 0)
 {
-    <MudProgressLinear Indeterminate Color="Color.Primary" Class="mb-4" />
+    <MudAlert Severity="Severity.Warning" Class="mb-4">
+        ⚠️ Tienes <b>@_atrasados</b> encargo(s) atrasados.
+    </MudAlert>
 }
-else
-{
-    <MudGrid>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
-                <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
-                    <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
-                    <div>
-                        <MudText Typo="Typo.h4"><b>@_encargos.Count</b></MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Encargos</MudText>
-                    </div>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
-                <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
-                    <MudIcon Icon="@Icons.Material.Filled.HourglassTop" Color="Color.Warning" Size="Size.Large" />
-                    <div>
-                        <MudText Typo="Typo.h4"><b>@_pendientes</b></MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Pendientes</MudText>
-                    </div>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
-                <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
-                    <div>
-                        <MudText Typo="Typo.h4"><b>@_listos</b></MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Listos</MudText>
-                    </div>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
-            <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
-                <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
-                    <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" />
-                    <div>
-                        <MudText Typo="Typo.h4"><b>@_clientes.Count</b></MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">Clientes</MudText>
-                    </div>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-    </MudGrid>
 
-    @if (_atrasados.Count > 0)
-    {
-        <MudAlert Severity="Severity.Warning" Class="mt-4">
-            ⚠️ Hay <b>@_atrasados.Count</b> encargo(s) atrasados.
-        </MudAlert>
-    }
+<MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Acceso Rápido</MudText>
+<MudGrid Class="mb-6">
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/encargos"))">
+            <div style="background-color:#C2185B;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Encargos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Ver, crear y gestionar todos los encargos del taller
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#C2185B;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/encargos"))">
+                    Ir a Encargos
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/clientes"))">
+            <div style="background-color:#880E4F;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.People" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Clientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Registrar y administrar la información de los clientes
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#880E4F;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/clientes"))">
+                    Ir a Clientes
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/costureras"))">
+            <div style="background-color:#F48FB1;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.ContentCut" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Costureras</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Gestionar las costureras y su disponibilidad
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#F48FB1;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/costureras"))">
+                    Ir a Costureras
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
-    <MudText Typo="Typo.h6" Class="mt-6 mb-3">Encargos Recientes</MudText>
-    <MudPaper Elevation="2">
-        <MudTable Items="@_encargos.Take(8)" Hover Dense>
-            <HeaderContent>
-                <MudTh>#</MudTh>
-                <MudTh>Cliente</MudTh>
-                <MudTh>Costurera</MudTh>
-                <MudTh>Tipo</MudTh>
-                <MudTh>Estado</MudTh>
-                <MudTh>Entrega</MudTh>
-                <MudTh>Total</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd>@context.Id</MudTd>
-                <MudTd>@context.NombreCliente</MudTd>
-                <MudTd>@context.NombreCosturera</MudTd>
-                <MudTd>@context.Tipo</MudTd>
-                <MudTd>
-                    <MudChip T="string" Color="@GetColor(context.Estado)" Size="Size.Small">@context.Estado</MudChip>
-                </MudTd>
-                <MudTd>
-                    <MudText Color="@(context.EstaAtrasado ? Color.Error : Color.Default)">
-                        @context.FechaEntregaEstimada.ToString("dd/MM/yyyy")
-                    </MudText>
-                </MudTd>
-                <MudTd>RD$@context.PrecioTotal.ToString("N2")</MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudPaper>
-}
+<MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Encargos Recientes</MudText>
+<MudPaper Elevation="2">
+    <MudTable Items="@_encargos.Take(5)" Hover Dense>
+        <HeaderContent>
+            <MudTh>#</MudTh>
+            <MudTh>Cliente</MudTh>
+            <MudTh>Costurera</MudTh>
+            <MudTh>Tipo</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Entrega</MudTh>
+            <MudTh>Total</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Id</MudTd>
+            <MudTd>@context.NombreCliente</MudTd>
+            <MudTd>@context.NombreCosturera</MudTd>
+            <MudTd>@context.Tipo</MudTd>
+            <MudTd>
+                <MudChip T="string" Color="@GetColor(context.Estado)" Size="Size.Small">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudText Color="@(context.EstaAtrasado? Color.Error: Color.Default)">
+                    @context.FechaEntregaEstimada.ToString("dd/MM/yyyy")
+                </MudText>
+            </MudTd>
+            <MudTd>RD$@context.PrecioTotal.ToString("N2")</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
 
 @code {
     private List<EncargoDto> _encargos = new();
     private List<ClienteDto> _clientes = new();
-    private List<EncargoDto> _atrasados = new();
-    private int _pendientes, _listos;
-    private bool _cargando = true;
+    private int _totalEncargos, _pendientes, _listos, _totalClientes, _atrasados;
 
     protected override async Task OnInitializedAsync()
     {
         _encargos = await EncargoSvc.GetAllAsync();
         _clientes = await ClienteSvc.GetAllAsync();
+        _totalEncargos = _encargos.Count;
         _pendientes = _encargos.Count(e => e.Estado == EstadoEncargo.Pendiente || e.Estado == EstadoEncargo.EnProceso);
         _listos = _encargos.Count(e => e.Estado == EstadoEncargo.Listo);
-        _atrasados = _encargos.Where(e => e.EstaAtrasado).ToList();
-        _cargando = false;
+        _totalClientes = _clientes.Count;
+        _atrasados = _encargos.Count(e => e.EstaAtrasado);
     }
 
     private Color GetColor(EstadoEncargo e) => e switch
