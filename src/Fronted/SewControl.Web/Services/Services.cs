@@ -73,6 +73,14 @@ public class CostureraService
         var r = await res.Content.ReadFromJsonAsync<ApiResponse<bool>>();
         return r?.Success ?? false;
     }
+
+    public async Task<(bool ok, string? message)> UpdateAsync(int id, CreateCostureraDto dto)
+    {
+        var res = await _http.PutAsJsonAsync($"api/costureras/{id}", dto);
+        var r = await res.Content.ReadFromJsonAsync<ApiResponse<CostureraDto>>();
+        return (r?.Success ?? false, r?.Message);
+    }
+
 }
 
 public class EncargoService
@@ -114,6 +122,13 @@ public class EncargoService
     public async Task<(bool ok, string? message)> UpdateAsync(int id, UpdateEncargoDto dto)
     {
         var res = await _http.PutAsJsonAsync($"api/encargos/{id}", dto);
+        var r = await res.Content.ReadFromJsonAsync<ApiResponse<EncargoDto>>();
+        return (r?.Success ?? false, r?.Message);
+    }
+
+    public async Task<(bool ok, string? message)> UpdateEncargoAsync(int id, CreateEncargoDto dto)
+    {
+        var res = await _http.PutAsJsonAsync($"api/encargos/editar/{id}", dto);
         var r = await res.Content.ReadFromJsonAsync<ApiResponse<EncargoDto>>();
         return (r?.Success ?? false, r?.Message);
     }

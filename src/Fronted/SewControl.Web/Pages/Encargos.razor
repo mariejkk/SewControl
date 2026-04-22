@@ -69,17 +69,17 @@ else
                     </MudText>
                 </MudTd>
                 <MudTd>RD$@context.PrecioTotal.ToString("N2")</MudTd>
-                <MudTd>
                     <MudText Color="@(context.Saldo > 0 ? Color.Error : Color.Success)">
                         RD$@context.Saldo.ToString("N2")
                     </MudText>
-                </MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
-                                   OnClick="@(() => Nav.NavigateTo($"/encargos/{context.Id}"))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                   Color="Color.Error" OnClick="@(() => Eliminar(context))" />
-                </MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                       OnClick="@(() => Editar(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                                       OnClick="@(() => Nav.NavigateTo($"/encargos/{context.Id}"))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
+                                       Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                    </MudTd>
             </RowTemplate>
             <NoRecordsContent><MudText Class="pa-4">No hay encargos.</MudText></NoRecordsContent>
         </MudTable>
@@ -91,7 +91,8 @@ else
     <MudOverlay Visible="_showForm" DarkBackground ZIndex="1000" />
     <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:600px;max-width:90vw;max-height:90vh;overflow-y:auto;">
         <MudPaper Elevation="8" Class="pa-6">
-            <MudText Typo="Typo.h6" Class="mb-4">Nuevo Encargo</MudText>
+            <MudText Typo="Typo.h6" Class="mb-4">@(_editando ? "Editar Encargo" : "Nuevo Encargo")</MudText>          
+            
             @if (_errores.Count > 0)
             {
                 <MudAlert Severity="Severity.Error" Class="mb-3">
@@ -159,6 +160,27 @@ else
     private CreateEncargoDto _form = new();
     private DateTime? _fechaEntrega = DateTime.Today.AddDays(7);
     private List<string> _errores = new();
+    private bool _editando = false;
+    private int _editandoId;
+
+    private void Editar(EncargoDto e)
+    {
+        _editandoId = e.Id;
+        _form = new CreateEncargoDto
+        {
+            Tipo = e.Tipo,
+            FechaEntregaEstimada = e.FechaEntregaEstimada,
+            PrecioTotal = e.PrecioTotal,
+            Anticipo = e.Anticipo,
+            Observaciones = e.Observaciones,
+            ClienteId = e.ClienteId,
+            CostureraId = e.CostureraId
+        };
+        _fechaEntrega = e.FechaEntregaEstimada;
+        _errores = new();
+        _editando = true;
+        _showForm = true;
+    }
 
     private IEnumerable<EncargoDto> Filtrados => _encargos
         .Where(e =>
@@ -180,9 +202,18 @@ else
     private async Task Guardar()
     {
         _form.FechaEntregaEstimada = _fechaEntrega ?? DateTime.Today.AddDays(7);
-        var (ok, msg, errors) = await EncargoSvc.CreateAsync(_form);
-        if (ok) { Snackbar.Add(msg ?? "Encargo creado.", Severity.Success); _showForm = false; _encargos = await EncargoSvc.GetAllAsync(); }
-        else _errores = errors ?? new List<string> { msg ?? "Error al crear encargo." };
+
+        if (_editando)
+        {
+            var (ok, msg) = await EncargoSvc.UpdateEncargoAsync(_editandoId, _form);
+            if (ok) { Snackbar.Add(msg ?? "Encargo actualizado.", Severity.Success); _showForm = false; _editando = false; _encargos = await EncargoSvc.GetAllAsync(); }
+        }
+        else
+        {
+            var (ok, msg, errors) = await EncargoSvc.CreateAsync(_form);
+            if (ok) { Snackbar.Add(msg ?? "Encargo creado.", Severity.Success); _showForm = false; _encargos = await EncargoSvc.GetAllAsync(); }
+            else _errores = errors ?? new List<string> { msg ?? "Error al crear encargo." };
+        }
     }
 
     private async Task Eliminar(EncargoDto e)
