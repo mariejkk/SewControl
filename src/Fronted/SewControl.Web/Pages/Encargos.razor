@@ -4,6 +4,8 @@
 @inject CostureraService CostureraeSvc
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject HttpClient Http
 
 <PageTitle>Encargos - SewControl</PageTitle>
 
@@ -77,8 +79,7 @@ else
                                        OnClick="@(() => Editar(context))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
                                        OnClick="@(() => Nav.NavigateTo($"/encargos/{context.Id}"))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small"
-                                       Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => ConfirmarEliminar(context))" />
                     </MudTd>
             </RowTemplate>
             <NoRecordsContent><MudText Class="pa-4">No hay encargos.</MudText></NoRecordsContent>
@@ -231,4 +232,19 @@ else
         EstadoEncargo.Cancelado => Color.Error,
         _ => Color.Default
     };
+
+    private async Task ConfirmarEliminar(EncargoDto encargo)
+    {
+        bool? resultado = await DialogService.ShowMessageBox(
+            "⚠️ Confirmación",
+            $"¿Estás seguro de que deseas eliminar este encargo. Esta acción no se puede deshacer.",
+            yesText: "Eliminar",
+            cancelText: "Cancelar"
+        );
+
+        if (resultado == true)
+        {
+            await Eliminar(encargo);
+        }
+    }
 }

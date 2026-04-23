@@ -1,6 +1,8 @@
 @page "/clientes"
 @inject ClienteService ClienteSvc
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject HttpClient Http
 
 <PageTitle>Clientes - SewControl</PageTitle>
 
@@ -40,7 +42,7 @@ else
                 <MudTd><MudChip T="string" Size="Size.Small" Color="Color.Primary">@context.TotalEncargos</MudChip></MudTd>
                 <MudTd>
                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="@(() => Editar(context))" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => Eliminar(context))" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => ConfirmarEliminar(context))" />
                 </MudTd>
             </RowTemplate>
             <NoRecordsContent><MudText>No hay clientes registrados.</MudText></NoRecordsContent>
@@ -130,4 +132,21 @@ else
         if (await ClienteSvc.DeleteAsync(c.Id))
         { Snackbar.Add("Cliente eliminado.", Severity.Success); await Cargar(); }
     }
+
+    private async Task ConfirmarEliminar(ClienteDto cliente)
+    {
+        bool? resultado = await DialogService.ShowMessageBox(
+            "⚠️ Confirmación",
+            $"¿Estás seguro de que deseas eliminar a {cliente.NombreCompleto}?",
+            yesText: "Eliminar",
+            cancelText: "Cancelar"
+        );
+
+        if (resultado == true)
+        {
+            await Eliminar(cliente);
+        }
+    }
 }
+
+

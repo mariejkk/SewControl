@@ -1,6 +1,8 @@
 @page "/costureras"
 @inject CostureraService CostureraeSvc
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject HttpClient Http
 
 <PageTitle>Costureras - SewControl</PageTitle>
 
@@ -53,7 +55,7 @@ else
                         <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
                                        Color="Color.Primary" OnClick="@(() => Editar(c))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                       Size="Size.Small" OnClick="@(() => Eliminar(c))" />
+                                       Size="Size.Small" OnClick="@(() => ConfirmarEliminar(c))" />
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -155,5 +157,20 @@ else
     {
         if (await CostureraeSvc.DeleteAsync(c.Id))
         { Snackbar.Add("Costurera eliminada.", Severity.Success); await Cargar(); }
+    }
+
+    private async Task ConfirmarEliminar(CostureraDto costurera)
+    {
+        bool? resultado = await DialogService.ShowMessageBox(
+            "⚠️ Confirmación",
+            $"¿Estás seguro de que deseas eliminar a {costurera.NombreCompleto}?",
+            yesText: "Eliminar",
+            cancelText: "Cancelar"
+        );
+
+        if (resultado == true)
+        {
+            await Eliminar(costurera);
+        }
     }
 }
