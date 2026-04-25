@@ -20,7 +20,7 @@
 - **RF10:** El sistema debe permitir registrar costureras con nombre, teléfono y especialidad.
 - **RF11:** El sistema debe permitir activar o desactivar costureras según su disponibilidad.
 - **RF12:** El sistema debe mostrar la carga de trabajo activa de cada costurera.
-- **RF13:** El médico debe poder atender distintos tipos de encargo: Confección, Arreglo, Bordado y Otro.
+- **RF13:** La Costurera debe poder atender distintos tipos de encargo: Confección, Arreglo, Bordado y Otro.
 
 ## Requerimientos No Funcionales
 #### 1. Seguridad
