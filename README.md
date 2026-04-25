@@ -1,12 +1,12 @@
 
 ## Requerimientos Funcionales
-####1. Gestión de Clientes
+#### 1. Gestión de Clientes
 
 - **RF1:** El cliente debe poder registrarse con su nombre completo, número telefónico, correo y direcció
 - **RF2:** El cliente debe poder modificar sus datos personales como teléfono, correo o dirección.
 - **RF3:** El sistema debe mostrar el historial de encargos del cliente, incluyendo prendas, arreglos, fechas y montos pagados.
 
-####2. Gestión de Encargos
+#### 2. Gestión de Encargos
 
 - **RF4:** El sistema debe permitir crear encargos con tipo, fecha de entrega estimada, precio total, anticipo y observaciones.
 - **RF5:** El sistema debe calcular automáticamente el saldo pendiente de cada encargo.
@@ -15,15 +15,15 @@
 - **RF8**: El sistema debe permitir agregar prendas y arreglos detallados dentro de cada encargo.
 - **RF9:** El sistema debe identificar y alertar sobre encargos atrasados automáticamente.
 
-####3. Gestión de Costureras
+#### 3. Gestión de Costureras
 
 - **RF10:** El sistema debe permitir registrar costureras con nombre, teléfono y especialidad.
 - **RF11:** El sistema debe permitir activar o desactivar costureras según su disponibilidad.
 - **RF12:** El sistema debe mostrar la carga de trabajo activa de cada costurera.
 - **RF13:** El médico debe poder atender distintos tipos de encargo: Confección, Arreglo, Bordado y Otro.
 
-##Requerimientos No Funcionales
-####1. Seguridad
+## Requerimientos No Funcionales
+#### 1. Seguridad
 
 - **RNF1:** El sistema implementa soft delete en todas las entidades para preservar la integridad de los datos históricos sin eliminarlos físicamente de la base de datos.
 - **RNF2:** El sistema implementa Global Query Filters en Entity Framework Core para excluir automáticamente los registros eliminados en todas las consultas.
@@ -31,7 +31,7 @@
 - **RNF4:** El sistema implementa CORS configurado en el backend para controlar qué orígenes pueden consumir la API.
 - **RNF5:** El sistema implementa validaciones en el backend antes de guardar cualquier dato, evitando registros incompletos o inconsistentes.
 
-####2. Rendimiento y Disponibilidad
+#### 2. Rendimiento y Disponibilidad
 
 - **RNF6:** El tiempo máximo de respuesta del sistema ante cualquier solicitud no debe superar los 5 segundos bajo condiciones normales.
 - **RNF7:** Deben realizarse copias de seguridad de la base de datos de forma frecuente para garantizar la integridad de la información.
