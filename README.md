@@ -1,6 +1,6 @@
 
 ## Requerimientos Funcionales
-### 1. Gestión de Clientes
+### :bust_in_silhouette: 1. Gestión de Clientes
 
 - **RF1:** El cliente debe poder registrarse con su nombre completo, número telefónico, correo y direcció
 - **RF2:** El cliente debe poder modificar sus datos personales como teléfono, correo o dirección.
