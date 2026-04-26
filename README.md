@@ -1,4 +1,5 @@
-## :pushpin: Requerimientos Funcionales
+
+  ## :pushpin: Requerimientos Funcionales
 ### 1. Gestión de Clientes
 
 - **RF1:** El cliente debe poder registrarse con su nombre completo, número telefónico, correo y dirección.
@@ -42,4 +43,11 @@
 
 - **RNF6:** El tiempo máximo de respuesta del sistema ante cualquier solicitud no debe superar los 5 segundos bajo condiciones normales.
 - **RNF7:** Deben realizarse copias de seguridad de la base de datos de forma frecuente para garantizar la integridad de la información.
+  
+---
+
+### 3 . Usabilidad y Accesibilidad
+
+- **RNF8:** La interfaz del sistema debe ser intuitiva y fácil de usar para cualquier tipo de usuario, priorizando claridad visual y flujo natural de navegación.
+- **RNF9:** La aplicación debe ser responsive, adaptándose correctamente a distintos dispositivos como móvil, tableta y escritorio.
   

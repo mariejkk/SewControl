@@ -1,0 +1,109 @@
+﻿@page "/dashboard"
+@inject EncargoService EncargoSvc
+@inject ClienteService ClienteSvc
+
+<PageTitle>Dashboard - SewControl</PageTitle>
+
+<MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Dashboard</MudText>
+<MudGrid Justify="Justify.Center" Class="mb-6">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_totalEncargos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Encargos</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.HourglassTop" Color="Color.Warning" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_pendientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Pendientes</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_listos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Listos</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Elevation="2" Style="background-color:#FFFFFC;">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Info" Size="Size.Large" />
+                <MudText Typo="Typo.h4"><b>@_totalClientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Clientes</MudText>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@if (_atrasados > 0)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4">
+        ⚠️ Tienes <b>@_atrasados</b> encargo(s) atrasados.
+    </MudAlert>
+}
+
+<MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Encargos Recientes</MudText>
+<MudPaper Elevation="2">
+    <MudTable Items="@_encargos.Take(5)" Hover Dense>
+        <HeaderContent>
+            <MudTh>#</MudTh>
+            <MudTh>Cliente</MudTh>
+            <MudTh>Costurera</MudTh>
+            <MudTh>Tipo</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh>Entrega</MudTh>
+            <MudTh>Total</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Id</MudTd>
+            <MudTd>@context.NombreCliente</MudTd>
+            <MudTd>@context.NombreCosturera</MudTd>
+            <MudTd>@context.Tipo</MudTd>
+            <MudTd>
+                <MudChip T="string" Color="@GetColor(context.Estado)" Size="Size.Small">@context.Estado</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudText Color="@(context.EstaAtrasado? Color.Error: Color.Default)">
+                    @context.FechaEntregaEstimada.ToString("dd/MM/yyyy")
+                </MudText>
+            </MudTd>
+            <MudTd>RD$@context.PrecioTotal.ToString("N2")</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<EncargoDto> _encargos = new();
+    private List<ClienteDto> _clientes = new();
+    private int _totalEncargos, _pendientes, _listos, _totalClientes, _atrasados;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _encargos = await EncargoSvc.GetAllAsync();
+        _clientes = await ClienteSvc.GetAllAsync();
+        _totalEncargos = _encargos.Count;
+        _pendientes = _encargos.Count(e => e.Estado == EstadoEncargo.Pendiente || e.Estado == EstadoEncargo.EnProceso);
+        _listos = _encargos.Count(e => e.Estado == EstadoEncargo.Listo);
+        _totalClientes = _clientes.Count;
+        _atrasados = _encargos.Count(e => e.EstaAtrasado);
+    }
+
+    private Color GetColor(EstadoEncargo e) => e switch
+    {
+        EstadoEncargo.Pendiente => Color.Warning,
+        EstadoEncargo.EnProceso => Color.Info,
+        EstadoEncargo.Listo => Color.Success,
+        EstadoEncargo.Entregado => Color.Default,
+        EstadoEncargo.Cancelado => Color.Error,
+        _ => Color.Default
+    };
+}

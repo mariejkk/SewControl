@@ -23,6 +23,10 @@ public class CosturerasController : ControllerBase
     public async Task<IActionResult> GetById(int id) =>
         Ok(await _service.GetCostureraByIdAsync(id));
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] CreateCostureraDto dto) =>
+    Ok(await _service.UpdateCostureraAsync(id, dto));
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateCostureraDto dto) =>
         Ok(await _service.CreateCostureraAsync(dto));

@@ -1,0 +1,75 @@
+﻿@page "/"
+@inject NavigationManager Nav
+
+<PageTitle>Inicio - SewControl</PageTitle>
+
+<MudStack AlignItems="AlignItems.Center" Class="mb-6 mt-4">
+    <MudText Typo="Typo.h3" Align="Align.Center" Style="color:#C2185B;font-weight:bold;">
+        Bienvenido a SewControl
+    </MudText>
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Style="color:#C2185B;font-weight:bold;">
+        Sistema de Control de Taller de Costura
+    </MudText>
+    <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary" Class="mt-2" Style="max-width:600px;">
+        Aquí puedes gestionar tus encargos, clientes y costureras de manera eficiente,
+        manteniendo el control total de tu taller en un solo lugar.
+    </MudText>
+</MudStack>
+
+<MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Quick Access</MudText>
+<MudGrid Class="mb-6">
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/encargos"))">
+            <div style="background-color:#C2185B;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Encargos</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Ver, crear y gestionar todos los encargos del taller
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#C2185B;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/encargos"))">
+                    Ir a Encargos
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/clientes"))">
+            <div style="background-color:#880E4F;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.People" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Clientes</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Registrar y administrar la información de los clientes
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#880E4F;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/clientes"))">
+                    Ir a Clientes
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Elevation="3" Class="pa-0" Style="cursor:pointer;overflow:hidden;"
+                  @onclick="@(() => Nav.NavigateTo("/costureras"))">
+            <div style="background-color:#F48FB1;padding:20px;text-align:center;">
+                <MudIcon Icon="@Icons.Material.Filled.ContentCut" Style="color:white;font-size:3rem;" />
+            </div>
+            <MudStack AlignItems="AlignItems.Center" Class="pa-3">
+                <MudText Typo="Typo.h6"><b>Costureras</b></MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                    Gestionar las costureras y su disponibilidad
+                </MudText>
+                <MudButton Variant="Variant.Filled" Style="background-color:#F48FB1;color:white;" FullWidth
+                           OnClick="@(() => Nav.NavigateTo("/costureras"))">
+                    Ir a Costureras
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>

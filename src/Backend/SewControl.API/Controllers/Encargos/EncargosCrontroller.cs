@@ -44,6 +44,10 @@ public class EncargosController : ControllerBase
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEncargoDto dto) =>
         Ok(await _service.UpdateEstadoAsync(id, dto));
 
+    [HttpPut("editar/{id}")]
+    public async Task<IActionResult> UpdateEncargo(int id, [FromBody] CreateEncargoDto dto) =>
+    Ok(await _service.UpdateEncargoAsync(id, dto));
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id) =>
         Ok(await _service.DeleteAsync(id));

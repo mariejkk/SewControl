@@ -51,6 +51,28 @@ public class EncargoService
         return ApiResponse<List<EncargoDto>>.Ok(_mapper.Map<List<EncargoDto>>(encargos));
     }
 
+    public async Task<ApiResponse<EncargoDto>> UpdateEncargoAsync(int id, CreateEncargoDto dto)
+    {
+        EncargoValidator.Validate(dto);
+
+        var encargo = await _uow.Encargos.GetByIdAsync(id)
+            ?? throw new NotFoundException("Encargo", id);
+
+        encargo.Tipo = dto.Tipo;
+        encargo.FechaEntregaEstimada = dto.FechaEntregaEstimada;
+        encargo.PrecioTotal = dto.PrecioTotal;
+        encargo.Anticipo = dto.Anticipo;
+        encargo.Observaciones = dto.Observaciones;
+        if (dto.CostureraId > 0) encargo.CostureraId = dto.CostureraId;
+        if (dto.ClienteId > 0) encargo.ClienteId = dto.ClienteId;
+
+        _uow.Encargos.Update(encargo);
+        await _uow.SaveChangesAsync();
+
+        var updated = await _uow.Encargos.GetWithDetailsByIdAsync(id);
+        return ApiResponse<EncargoDto>.Ok(_mapper.Map<EncargoDto>(updated!), "Encargo actualizado.");
+    }
+
     public async Task<ApiResponse<EncargoDto>> CreateAsync(CreateEncargoDto dto)
     {
         EncargoValidator.Validate(dto);

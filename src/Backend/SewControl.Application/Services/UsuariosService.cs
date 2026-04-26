@@ -87,6 +87,24 @@ public class UsuariosService
         return ApiResponse<CostureraDto>.Ok(_mapper.Map<CostureraDto>(costurera));
     }
 
+    public async Task<ApiResponse<CostureraDto>> UpdateCostureraAsync(int id, CreateCostureraDto dto)
+    {
+        CostureraValidator.Validate(dto);
+
+        var costurera = await _uow.Costureras.GetByIdAsync(id)
+            ?? throw new NotFoundException("Costurera", id);
+
+        costurera.Nombre = dto.Nombre;
+        costurera.Apellido = dto.Apellido;
+        costurera.Telefono = dto.Telefono;
+        costurera.Especialidad = dto.Especialidad;
+
+        _uow.Costureras.Update(costurera);
+        await _uow.SaveChangesAsync();
+
+        return ApiResponse<CostureraDto>.Ok(_mapper.Map<CostureraDto>(costurera), "Costurera actualizada.");
+    }
+
     public async Task<ApiResponse<CostureraDto>> CreateCostureraAsync(CreateCostureraDto dto)
     {
         CostureraValidator.Validate(dto);

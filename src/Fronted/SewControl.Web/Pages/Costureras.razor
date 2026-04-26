@@ -1,6 +1,8 @@
 @page "/costureras"
 @inject CostureraService CostureraeSvc
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject HttpClient Http
 
 <PageTitle>Costureras - SewControl</PageTitle>
 
@@ -50,8 +52,10 @@ else
                             @(c.Activa ? "Desactivar" : "Activar")
                         </MudButton>
                         <MudSpacer />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                                       Color="Color.Primary" OnClick="@(() => Editar(c))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                       Size="Size.Small" OnClick="@(() => Eliminar(c))" />
+                                       Size="Size.Small" OnClick="@(() => ConfirmarEliminar(c))" />
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -70,7 +74,7 @@ else
     <MudOverlay Visible="_showForm" DarkBackground ZIndex="1000" />
     <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:520px;max-width:90vw;">
         <MudPaper Elevation="8" Class="pa-6">
-            <MudText Typo="Typo.h6" Class="mb-4">Nueva Costurera</MudText>
+            <MudText Typo="Typo.h6" Class="mb-4">@(_editando ? "Editar Costurera" : "Nueva Costurera")</MudText>
             @if (_errores.Count > 0)
             {
                 <MudAlert Severity="Severity.Error" Class="mb-3">
@@ -99,6 +103,8 @@ else
     private bool _cargando = true, _showForm = false;
     private CreateCostureraDto _form = new();
     private List<string> _errores = new();
+    private bool _editando = false;    
+    private int _editandoId;
 
     protected override async Task OnInitializedAsync() => await Cargar();
 
@@ -111,12 +117,35 @@ else
 
     private void Abrir() { _form = new(); _errores = new(); _showForm = true; }
 
+    private void Editar(CostureraDto c)
+    {
+        _editandoId = c.Id;
+        _form = new CreateCostureraDto
+        {
+            Nombre = c.Nombre,
+            Apellido = c.Apellido,
+            Telefono = c.Telefono,
+            Especialidad = c.Especialidad
+        };
+        _errores = new();
+        _editando = true;
+        _showForm = true;
+    }
+
     private async Task Guardar()
+{
+        if (_editando)
+        {
+            (bool ok, string? msg) = await CostureraeSvc.UpdateAsync(_editandoId, _form);
+            if (ok) { Snackbar.Add(msg ?? "Costurera actualizada.", Severity.Success); _showForm = false; _editando = false; await Cargar(); }
+        }
+    else
     {
         var (ok, msg, errors) = await CostureraeSvc.CreateAsync(_form);
         if (ok) { Snackbar.Add(msg ?? "Costurera registrada.", Severity.Success); _showForm = false; await Cargar(); }
         else _errores = errors ?? new List<string> { msg ?? "Error." };
     }
+}
 
     private async Task Toggle(CostureraDto c)
     {
@@ -128,5 +157,20 @@ else
     {
         if (await CostureraeSvc.DeleteAsync(c.Id))
         { Snackbar.Add("Costurera eliminada.", Severity.Success); await Cargar(); }
+    }
+
+    private async Task ConfirmarEliminar(CostureraDto costurera)
+    {
+        bool? resultado = await DialogService.ShowMessageBox(
+            "⚠️ Confirmación",
+            $"¿Estás seguro de que deseas eliminar a {costurera.NombreCompleto}?",
+            yesText: "Eliminar",
+            cancelText: "Cancelar"
+        );
+
+        if (resultado == true)
+        {
+            await Eliminar(costurera);
+        }
     }
 }
