@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SewControl.Domain.Entities;
 using SewControl.Domain.Entities.Encargos;
 using SewControl.Domain.Entities.Usuarios;
 using System;
@@ -8,6 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SewControl.Infrastructure.Repositories;
+
+public interface IUsuarioRepository : IGenericRepository<Usuario>
+{
+    Task<Usuario?> GetByEmailAsync(string email);
+}
 
 public interface IEncargoRepository : IGenericRepository<Encargo>
 {
@@ -32,6 +38,7 @@ public interface ICostureraRepository : IGenericRepository<Costurera>
 
 public interface IUnitOfWork : IDisposable
 {
+    IUsuarioRepository Usuarios { get; }    
     IEncargoRepository Encargos { get; }
     IClienteRepository Clientes { get; }
     ICostureraRepository Costureras { get; }
@@ -39,6 +46,15 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<Arreglo> Arreglos { get; }
     Task<int> SaveChangesAsync();
 }
+
+public class UsuarioRepository : GenericRepository<Usuario>, IUsuarioRepository
+{
+    public UsuarioRepository(DbContext ctx) : base(ctx) { }
+
+    public async Task<Usuario?> GetByEmailAsync(string email) =>
+        await _dbSet.FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
+}
+
 public class EncargoRepository : GenericRepository<Encargo>, IEncargoRepository
 {
     public EncargoRepository(DbContext ctx) : base(ctx) { }
@@ -122,6 +138,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly DbContext _context;
 
+    public IUsuarioRepository Usuarios { get; }
     public IEncargoRepository Encargos { get; }
     public IClienteRepository Clientes { get; }
     public ICostureraRepository Costureras { get; }
@@ -131,6 +148,8 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(DbContext context)
     {
         _context = context;
+
+        Usuarios = new UsuarioRepository(context);
         Encargos = new EncargoRepository(context);
         Clientes = new ClienteRepository(context);
         Costureras = new CostureraRepository(context);

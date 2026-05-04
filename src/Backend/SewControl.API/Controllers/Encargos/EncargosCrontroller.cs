@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SewControl.Application.Dtos.Encargos;
-using SewControl.Domain.Entities.Encargos;
 using SewControl.Application.Services;
+using SewControl.Domain.Entities.Encargos;
 
 namespace SewControl.API.Controllers.Encargos;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class EncargosController : ControllerBase

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SewControl.Application.Dtos.Usuarios;
 using SewControl.Application.Services;
 
 namespace SewControl.API.Controllers.Usuarios;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ClientesController : ControllerBase
