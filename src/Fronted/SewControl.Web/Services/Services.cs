@@ -1,7 +1,74 @@
+using Microsoft.JSInterop;
 using SewControl.Web.Models;
 using System.Net.Http.Json;
 
 namespace SewControl.Web.Services;
+
+public class AuthService
+{
+    private readonly HttpClient _http;
+    private readonly IJSRuntime _js;
+
+    public AuthService(HttpClient http, IJSRuntime js)
+    {
+        _http = http;
+        _js = js;
+    }
+
+    public async Task<(bool ok, string? message)> LoginAsync(LoginDto dto)
+    {
+        var res = await _http.PostAsJsonAsync("api/auth/login", dto);
+        var r = await res.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDto>>();
+
+        if (r?.Success == true && r.Data != null)
+        {
+            await _js.InvokeVoidAsync("localStorage.setItem", "token", r.Data.Token);
+            await _js.InvokeVoidAsync("localStorage.setItem", "usuario", r.Data.Nombre);
+            return (true, r.Message);
+        }
+
+        return (false, r?.Message ?? "Error al iniciar sesión.");
+    }
+
+    public async Task LogoutAsync()
+    {
+        await _js.InvokeVoidAsync("localStorage.removeItem", "token");
+        await _js.InvokeVoidAsync("localStorage.removeItem", "usuario");
+    }
+
+    public async Task<string?> GetTokenAsync()
+    {
+        return await _js.InvokeAsync<string?>("localStorage.getItem", "token");
+    }
+
+    public async Task<bool> IsAuthenticatedAsync()
+    {
+        var token = await GetTokenAsync();
+        return !string.IsNullOrEmpty(token);
+    }
+}
+
+public class AuthHttpHandler : DelegatingHandler
+{
+    private readonly IJSRuntime _js;
+
+    public AuthHttpHandler(IJSRuntime js)
+    {
+        _js = js;
+    }
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var token = await _js.InvokeAsync<string?>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+            request.Headers.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
 
 public class ClienteService
 {

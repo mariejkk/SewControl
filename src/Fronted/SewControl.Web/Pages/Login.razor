@@ -1,0 +1,115 @@
+﻿@page "/login"
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@layout EmptyLayout
+
+<PageTitle>Login - SewControl</PageTitle>
+
+<div style="display:flex;height:100vh;margin:0;padding:0;">
+
+    <div style="width:50%;background:linear-gradient(135deg, #8F2B78 0%, #C2185B 60%, #F48FB1 100%);
+        display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;">
+        <div style="text-align:center;color:white;">
+            <img src="Images/SewContorllogo.png"
+                 style="height:200px;width:auto;object-fit:contain;margin-bottom:20px;"
+                 alt="SewControl" />           
+                 <div style="font-size:42px;font-weight:bold;letter-spacing:2px;margin-bottom:12px;">SewControl</div>
+            <div style="font-size:16px;opacity:0.85;max-width:320px;line-height:1.7;">
+              Donde hay control, no se enreda el hilo.           
+              </div>
+        </div>
+    </div>
+
+    <div style="width:45%;display:flex;justify-content:center;align-items:center;
+        background-color:#FAFAFA;padding:60px;">
+        <div style="width:100%;max-width:380px;">
+
+            <div style="margin-bottom:40px;">
+                <MudText Typo="Typo.h4"
+                         Style=" background: linear-gradient(135deg, #8F2B78 0%, #C2185B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                    font-weight:bold;
+                    margin-bottom:8px;">
+                    Bienvenido
+                </MudText>
+                <MudText Typo="Typo.body1" Style="color:#888;">
+                    Ingresa tus credenciales para acceder
+                </MudText>
+            </div>
+
+            @if (_error != null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4" Dense>@_error</MudAlert>
+            }
+
+            <div style="margin-bottom:20px;">
+                <MudTextField @bind-Value="_form.Email"
+                              Label="Correo electrónico"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Email"
+                              AdornmentColor="Color.Secondary"
+                              FullWidth />
+            </div>
+
+            <div style="margin-bottom:32px;">
+                <MudTextField @bind-Value="_form.Password"
+                              Label="Contraseña"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Lock"
+                              AdornmentColor="Color.Secondary"
+                              FullWidth />
+            </div>
+
+            <MudButton Variant="Variant.Filled"
+                       FullWidth
+                       Size="Size.Large"
+                       Style="background:linear-gradient(135deg, #8F2B78 0%, #C2185B 100%);color:white;border-radius:8px;padding:14px;font-size:16px;" OnClick="IniciarSesion"
+                       Disabled="_cargando">
+                @if (_cargando)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate
+                                         Style="color:white;margin-right:10px;" />
+                    <span>Ingresando...</span>
+                }
+                else
+                {
+                    <span>Iniciar Sesión</span>
+                }
+            </MudButton>
+
+            <div style="margin-top:40px;text-align:center;color:#aaa;font-size:13px;">
+                © 2026 SewControl — Todos los derechos reservados
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginDto _form = new();
+    private string? _error;
+    private bool _cargando = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthSvc.IsAuthenticatedAsync())
+            Nav.NavigateTo("/");
+    }
+
+    private async Task IniciarSesion()
+    {
+        _error = null;
+        _cargando = true;
+
+        var (ok, message) = await AuthSvc.LoginAsync(_form);
+
+        if (ok)
+            Nav.NavigateTo("/");
+        else
+            _error = message ?? "Usuario o contraseña incorrectos.";
+
+        _cargando = false;
+    }
+}
