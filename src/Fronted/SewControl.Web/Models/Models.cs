@@ -5,6 +5,7 @@ public enum EstadoEncargo { Pendiente, EnProceso, Listo, Entregado, Cancelado }
 public enum TipoPrenda { Camisa, Pantalon, Vestido, Falda, Chaqueta, Traje, Blusa, Otro }
 public enum TipoArreglo { Dobladillo, Cremallera, Zurcido, Ajuste, Otro }
 
+
 public class ApiResponse<T>
 {
     public bool Success { get; set; }
@@ -12,7 +13,18 @@ public class ApiResponse<T>
     public T? Data { get; set; }
     public List<string>? Errors { get; set; }
 }
+public class LoginDto
+{
+    public string Email { get; set; } = "";
+    public string Password { get; set; } = "";
+}
 
+public class LoginResponseDto
+{
+    public string Token { get; set; } = "";
+    public string Nombre { get; set; } = "";
+    public string Email { get; set; } = "";
+}
 public class ClienteDto
 {
     public int Id { get; set; }

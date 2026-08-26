@@ -20,53 +20,67 @@
 }
 else
 {
-    <MudGrid>
-        @foreach (var c in _costureras)
-        {
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Elevation="2">
-                    <MudCardHeader>
-                        <CardHeaderAvatar>
-                            <MudAvatar Color="@(c.Activa? Color.Primary: Color.Default)" Size="Size.Large">
-                                @c.Nombre[0]
-                            </MudAvatar>
-                        </CardHeaderAvatar>
-                        <CardHeaderContent>
-                            <MudText Typo="Typo.subtitle1"><b>@c.NombreCompleto</b></MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">@(c.Especialidad ?? "Sin especialidad")</MudText>
-                        </CardHeaderContent>
-                        <CardHeaderActions>
-                            <MudChip T="string" Size="Size.Small" Color="@(c.Activa? Color.Success: Color.Default)">
-                                @(c.Activa ? "Activa" : "Inactiva")
-                            </MudChip>
-                        </CardHeaderActions>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2">📞 @c.Telefono</MudText>
-                        <MudText Typo="Typo.body2">📋 @c.EncargosActivos encargo(s) activo(s)</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Size="Size.Small" Variant="Variant.Outlined"
-                                   Color="@(c.Activa ? Color.Warning : Color.Success)"
-                                   OnClick="@(() => Toggle(c))">
-                            @(c.Activa ? "Desactivar" : "Activar")
-                        </MudButton>
-                        <MudSpacer />
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
-                                       Color="Color.Primary" OnClick="@(() => Editar(c))" />
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                       Size="Size.Small" OnClick="@(() => ConfirmarEliminar(c))" />
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        }
-        @if (_costureras.Count == 0)
-        {
-            <MudItem xs="12">
-                <MudText Color="Color.Secondary" Class="pa-4">No hay costureras registradas.</MudText>
-            </MudItem>
-        }
-    </MudGrid>
+    <MudPaper Elevation="2">
+        <MudTable Items="@_costureras" Hover Filter="new Func<CostureraDto, bool>(Filtrar)">
+            
+            <ToolBarContent>
+                <MudTextField @bind-Value="_busqueda" Placeholder="Buscar..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate />
+            </ToolBarContent>
+
+            <HeaderContent>
+                <MudTh>Nombre</MudTh>
+                <MudTh>Teléfono</MudTh>
+                <MudTh>Especialidad</MudTh>
+                <MudTh>Encargos</MudTh>
+                <MudTh>Estado</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context.NombreCompleto</MudTd>
+                <MudTd>@context.Telefono</MudTd>
+                <MudTd>@(context.Especialidad ?? "-")</MudTd>
+                <MudTd>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                        @context.EncargosActivos
+                    </MudChip>
+                </MudTd>
+
+                <MudTd>
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@(context.Activa ? Color.Success : Color.Default)">
+                        @(context.Activa ? "Activa" : "Inactiva")
+                    </MudChip>
+                </MudTd>
+
+                <MudTd>
+                    <MudIconButton Icon="@(context.Activa ? Icons.Material.Filled.ToggleOn : Icons.Material.Filled.ToggleOff)"
+                                   Size="Size.Small"
+                                   Color="@(context.Activa ? Color.Success : Color.Default)"
+                                   OnClick="@(() => Toggle(context))" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => Editar(context))" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => ConfirmarEliminar(context))" />
+                </MudTd>
+            </RowTemplate>
+
+            <NoRecordsContent>
+                <MudText>No hay costureras registradas.</MudText>
+            </NoRecordsContent>
+
+        </MudTable>
+    </MudPaper>
 }
 
 @if (_showForm)
@@ -99,6 +113,14 @@ else
 }
 
 @code {
+    private string _busqueda = "";
+
+    private bool Filtrar(CostureraDto c) =>
+    string.IsNullOrEmpty(_busqueda) ||
+    c.NombreCompleto.Contains(_busqueda, StringComparison.OrdinalIgnoreCase) ||
+    c.Telefono.Contains(_busqueda) ||
+    (c.Especialidad != null && c.Especialidad.Contains(_busqueda, StringComparison.OrdinalIgnoreCase));
+
     private List<CostureraDto> _costureras = new();
     private bool _cargando = true, _showForm = false;
     private CreateCostureraDto _form = new();
@@ -115,8 +137,13 @@ else
         _cargando = false;
     }
 
-    private void Abrir() { _form = new(); _errores = new(); _showForm = true; }
-
+    private void Abrir()
+    {
+        _form = new();
+        _errores = new();
+        _editando = false;  
+        _showForm = true;
+    }
     private void Editar(CostureraDto c)
     {
         _editandoId = c.Id;
@@ -132,8 +159,10 @@ else
         _showForm = true;
     }
 
+
     private async Task Guardar()
 {
+        _errores = new();
         if (_editando)
         {
             (bool ok, string? msg) = await CostureraeSvc.UpdateAsync(_editandoId, _form);

@@ -44,13 +44,14 @@
     </MudItem>
 </MudGrid>
 
-@if (_atrasados > 0)
+@if (_encargos.Any(e => e.EstaAtrasado &&
+     e.Estado != EstadoEncargo.Listo &&
+     e.Estado != EstadoEncargo.Cancelado))
 {
     <MudAlert Severity="Severity.Warning" Class="mb-4">
-        ⚠️ Tienes <b>@_atrasados</b> encargo(s) atrasados.
+        Tienes encargos atrasados.
     </MudAlert>
 }
-
 <MudText Typo="Typo.h6" Class="mb-3" Style="color:#C2185B;">Encargos Recientes</MudText>
 <MudPaper Elevation="2">
     <MudTable Items="@_encargos.Take(5)" Hover Dense>

@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -6,44 +8,112 @@
 <MudPopoverProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="2" Style="background-color:#8F2B78;">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="@(() => _drawerOpen = !_drawerOpen)" />
 
-        <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="ml-2">
-            <MudText Typo="Typo.h6" Class="ml-2">SewControl</MudText>
-        </MudStack>
+    <MudAppBar Elevation="1"
+               Style="background-color:white; height:56px ">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Default"
+                       Edge="Edge.Start"
+                       OnClick="@ToggleDrawer" />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" ClipMode="DrawerClipMode.Always"
-               Style="background-color:#FFFFFF ;">
+    <MudDrawer @bind-Open="_drawerOpen"
+               Variant="DrawerVariant.Persistent"
+               Width="225px"
+               Elevation="2"
+               Style="background-color:#71064B;">
+
         <MudNavMenu>
-            <MudText Typo="Typo.overline" Class="px-4 pt-4 pb-1" Color="Color.Secondary">MENÚ</MudText>
-            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+
+            <MudStack Row AlignItems="AlignItems.Center"
+                      Class="px-4 pt-4 pb-2"
+                      Style="background-color:#AE0774;">
+
+                <img src="images/SewContorllogo.png" style="height:20px;" />
+
+                <MudText Typo="Typo.h6"
+                         Style="color:white; font-weight:bold;">
+                    SewControl
+                </MudText>
+
+            </MudStack>
+
+            <MudDivider Class="my-0" Style="background-color:#2E2E40;" />
+
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Style="color:white;">
+                <MudIcon Icon ="@Icons.Material.Filled.Home"
+                        Style="color:white;"/>
                 Inicio
             </MudNavLink>
-            <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">
+
+            <MudNavLink Href="/dashboard" Style="color:white;">
+    
+                <MudIcon Icon="@Icons.Material.Filled.Dashboard"
+                         Style="color:white;"/>
                 Dashboard
             </MudNavLink>
-            <MudNavLink Href="/encargos" Icon="@Icons.Material.Filled.Assignment">
+
+            <MudNavLink Href="/encargos" Style="color:white;">
+    
+                <MudIcon Icon="@Icons.Material.Filled.Assignment"
+                         Style="color:white;" />
                 Encargos
             </MudNavLink>
-            <MudNavLink Href="/clientes" Icon="@Icons.Material.Filled.People">
+
+            <MudNavLink Href="/clientes" Style="color:white;">
+    
+                <MudIcon Icon="@Icons.Material.Filled.People"
+                         Style="color:white;" />
                 Clientes
             </MudNavLink>
-            <MudNavLink Href="/costureras" Icon="@Icons.Material.Filled.ContentCut">
+
+            <MudNavLink Href="/Costureras" Style="color:white;">
+    
+                <MudIcon Icon="@Icons.Material.Filled.ContentCut"
+                         Style="color:white;" />
                 Costureras
             </MudNavLink>
+
+            <MudSpacer />
+
+            <MudDivider Class="my-2" Style="background-color:#2E2E40;" />
+
+            <MudNavLink OnClick="Logout" Style="color:white;">
+
+                <MudIcon Icon="@Icons.Material.Filled.Logout"
+                         Style="color:white; margin-right:8px;" />
+
+                Cerrar Sesión
+            </MudNavLink>
+
         </MudNavMenu>
     </MudDrawer>
 
-    <MudMainContent>
+    <MudMainContent Style="background-color:#F5F6FA; min-height:100vh;">
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
             @Body
         </MudContainer>
     </MudMainContent>
+
 </MudLayout>
 
 @code {
     private bool _drawerOpen = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AuthSvc.IsAuthenticatedAsync())
+            Nav.NavigateTo("/login");
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private async Task Logout()
+    {
+        await AuthSvc.LogoutAsync();
+        Nav.NavigateTo("/login");
+    }
 }

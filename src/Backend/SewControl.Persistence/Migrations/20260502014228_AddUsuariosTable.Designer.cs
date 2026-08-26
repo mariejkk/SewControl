@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SewControl.Persistence.Data;
 
@@ -11,9 +12,11 @@ using SewControl.Persistence.Data;
 namespace SewControl.Persistence.Migrations
 {
     [DbContext(typeof(SewControlContext))]
-    partial class SewControlContextModelSnapshot : ModelSnapshot
+    [Migration("20260502014228_AddUsuariosTable")]
+    partial class AddUsuariosTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

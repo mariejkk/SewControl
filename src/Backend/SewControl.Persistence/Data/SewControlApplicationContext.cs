@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SewControl.Domain.Entities;
 using SewControl.Domain.Entities.Encargos;
 using SewControl.Domain.Entities.Usuarios;
 using System;
@@ -14,6 +15,7 @@ public class SewControlContext : DbContext
 {
     public SewControlContext(DbContextOptions<SewControlContext> options) : base(options) { }
 
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<Costurera> Costureras => Set<Costurera>();
     public DbSet<Encargo> Encargos => Set<Encargo>();
