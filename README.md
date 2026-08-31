@@ -4,6 +4,7 @@
 
 El sistema está diseñado bajo una arquitectura por capas (Domain, Application, Infrastructure, Persistence, API), separando claramente las responsabilidades del negocio, el acceso a datos y la exposición de servicios. La API expone endpoints REST protegidos con autenticación **JWT**, donde cada usuario debe registrarse e iniciar sesión para acceder a las operaciones del sistema.
 
+
 ### Funcionalidades principales
 
 - **Gestión de clientes**: registro, edición, consulta y eliminación de clientes, con seguimiento de su historial de encargos.
@@ -12,16 +13,19 @@ El sistema está diseñado bajo una arquitectura por capas (Domain, Application,
 - **Prendas y arreglos**: cada encargo puede desglosarse en prendas específicas (con tela, color, talla) y arreglos individuales (con su propio costo), permitiendo un control detallado del trabajo.
 - **Dashboard**: vista general con estadísticas clave (total de encargos, pendientes, listos, clientes) y alertas de encargos atrasados.
 - **Autenticación**: registro y login de usuarios con contraseñas cifradas (BCrypt) y tokens JWT para proteger el acceso a la información.
+  
 
 ### Componentes del proyecto
 
 - **Backend (API REST)**: desarrollado en ASP.NET Core, documentado con Swagger, y desplegado en producción.
 - **Frontend (Blazor WebAssembly)**: interfaz visual con MudBlazor que consume la API, con su propio flujo de login/registro.
+  
 
-### 3 . Usabilidad y Accesibilidad
+### Usabilidad y Accesibilidad
 
 - **RNF8:** La interfaz del sistema debe ser intuitiva y fácil de usar para cualquier tipo de usuario, priorizando claridad visual y flujo natural de navegación.
 - **RNF9:** La aplicación debe ser responsive, adaptándose correctamente a distintos dispositivos como móvil, tableta y escritorio.
+  
 
 ## Cómo probar el proyecto
 
