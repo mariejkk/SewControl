@@ -13,11 +13,14 @@ public class ApiResponse<T>
     public T? Data { get; set; }
     public List<string>? Errors { get; set; }
 }
+
 public class LoginDto
 {
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
 }
+
+
 
 public class LoginResponseDto
 {
@@ -25,6 +28,14 @@ public class LoginResponseDto
     public string Nombre { get; set; } = "";
     public string Email { get; set; } = "";
 }
+
+public class RegisterDto
+{
+    public string Nombre { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string Password { get; set; } = "";
+}
+
 public class ClienteDto
 {
     public int Id { get; set; }

@@ -1,10 +1,10 @@
-﻿@page "/login"
+@page "/register"
 @inject AuthService AuthSvc
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
 @layout EmptyLayout
 
-<PageTitle>Login - SewControl</PageTitle>
+<PageTitle>Registro - SewControl</PageTitle>
 
 <div style="display:flex;height:100vh;margin:0;padding:0;">
 
@@ -13,11 +13,11 @@
         <div style="text-align:center;color:white;">
             <img src="Images/SewContorllogo.png"
                  style="height:200px;width:auto;object-fit:contain;margin-bottom:20px;"
-                 alt="SewControl" />           
-                 <div style="font-size:42px;font-weight:bold;letter-spacing:2px;margin-bottom:12px;">SewControl</div>
+                 alt="SewControl" />
+            <div style="font-size:42px;font-weight:bold;letter-spacing:2px;margin-bottom:12px;">SewControl</div>
             <div style="font-size:16px;opacity:0.85;max-width:320px;line-height:1.7;">
-              Donde hay control, no se enreda el hilo.           
-              </div>
+                Donde hay control, no se enreda el hilo.
+            </div>
         </div>
     </div>
 
@@ -30,10 +30,10 @@
                          Style=" background: linear-gradient(135deg, #8F2B78 0%, #C2185B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
                     font-weight:bold;
                     margin-bottom:8px;">
-                    Bienvenido
+                    Crear cuenta
                 </MudText>
                 <MudText Typo="Typo.body1" Style="color:#888;">
-                    Ingresa tus credenciales para acceder
+                    Regístrate para empezar a usar SewControl
                 </MudText>
             </div>
 
@@ -41,6 +41,16 @@
             {
                 <MudAlert Severity="Severity.Error" Class="mb-4" Dense>@_error</MudAlert>
             }
+
+            <div style="margin-bottom:20px;">
+                <MudTextField @bind-Value="_form.Nombre"
+                              Label="Nombre completo"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Person"
+                              AdornmentColor="Color.Secondary"
+                              FullWidth />
+            </div>
 
             <div style="margin-bottom:20px;">
                 <MudTextField @bind-Value="_form.Email"
@@ -66,27 +76,28 @@
             <MudButton Variant="Variant.Filled"
                        FullWidth
                        Size="Size.Large"
-                       Style="background:linear-gradient(135deg, #8F2B78 0%, #C2185B 100%);color:white;border-radius:8px;padding:14px;font-size:16px;" OnClick="IniciarSesion"
+                       Style="background:linear-gradient(135deg, #8F2B78 0%, #C2185B 100%);color:white;border-radius:8px;padding:14px;font-size:16px;"
+                       OnClick="Registrarse"
                        Disabled="_cargando">
                 @if (_cargando)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate
                                          Style="color:white;margin-right:10px;" />
-                    <span>Ingresando...</span>
+                    <span>Registrando...</span>
                 }
                 else
                 {
-                    <span>Iniciar Sesión</span>
+                    <span>Crear cuenta</span>
                 }
             </MudButton>
 
             <div style="margin-top:24px;text-align:center;">
-                <MudLink Href="/register" Style="color:#C2185B;font-size:14px;">
-                    ¿No tienes cuenta? Regístrate
+                <MudLink Href="/login" Style="color:#C2185B;font-size:14px;">
+                    ¿Ya tienes cuenta? Inicia sesión
                 </MudLink>
             </div>
 
-            <div style="margin-top:40px;text-align:center;color:#aaa;font-size:13px;">
+            <div style="margin-top:24px;text-align:center;color:#aaa;font-size:13px;">
                 © 2026 SewControl — Todos los derechos reservados
             </div>
         </div>
@@ -94,7 +105,7 @@
 </div>
 
 @code {
-    private LoginDto _form = new();
+    private RegisterDto _form = new();
     private string? _error;
     private bool _cargando = false;
 
@@ -104,17 +115,31 @@
             Nav.NavigateTo("/");
     }
 
-    private async Task IniciarSesion()
+    private async Task Registrarse()
     {
         _error = null;
+
+        if (string.IsNullOrWhiteSpace(_form.Nombre) ||
+            string.IsNullOrWhiteSpace(_form.Email) ||
+            string.IsNullOrWhiteSpace(_form.Password))
+        {
+            _error = "Completa todos los campos.";
+            return;
+        }
+
         _cargando = true;
 
-        var (ok, message) = await AuthSvc.LoginAsync(_form);
+        var (ok, message) = await AuthSvc.RegisterAsync(_form);
 
         if (ok)
-            Nav.NavigateTo("/");
+        {
+            Snackbar.Add("Cuenta creada exitosamente. Ahora inicia sesión.", Severity.Success);
+            Nav.NavigateTo("/login");
+        }
         else
-            _error = message ?? "Usuario o contraseña incorrectos.";
+        {
+            _error = message ?? "No se pudo completar el registro.";
+        }
 
         _cargando = false;
     }
