@@ -15,6 +15,14 @@ public class AuthService
         _js = js;
     }
 
+    public async Task<(bool ok, string? message)> RegisterAsync(RegisterDto dto)
+    {
+        var res = await _http.PostAsJsonAsync("api/auth/register", dto);
+        var r = await res.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDto>>();
+
+        return (r?.Success ?? false, r?.Message);
+    }
+
     public async Task<(bool ok, string? message)> LoginAsync(LoginDto dto)
     {
         var res = await _http.PostAsJsonAsync("api/auth/login", dto);
